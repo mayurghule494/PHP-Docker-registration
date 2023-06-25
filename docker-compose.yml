@@ -1,0 +1,71 @@
+version: '3'
+
+services:
+  app:
+    container_name: my-app
+    depends_on:
+      - mysql_db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-app-image:latest
+    ports:
+      - 8000:80
+    depends_on:
+      - db
+    networks:
+      - madmax
+
+    volumes:
+      - type: volume
+        source: mydata
+        target: /var/www/htm
+        volume:
+          nocopy: true
+    #volumes:
+    #  - ./backup:/var/www/html
+
+  mysql_db:
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: project
+      MYSQL_USER: mayur
+      MYSQL_PASSWORD: mayur
+    ports:
+      - "6033:3306"
+
+    volumes:
+      - type: volume
+        source: mydata
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+
+    networks:
+      - madmax
+
+    #volumes:
+    #  - dbdata:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db
+    environment:
+      PMA_HOST: mysql_db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+
+    networks:
+      - madmax
+
+volumes:
+  mydata:
+  dbdata:
+networks:
+  madmax:
